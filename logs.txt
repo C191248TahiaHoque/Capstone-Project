@@ -1,0 +1,3 @@
+0 | {'action': 'genesis'}
+1 | {'user': 'tahia@gmail.com', 'action': 'register'}
+2 | {'user': 'tahia@gmail.com', 'action': 'manual_hash'}
