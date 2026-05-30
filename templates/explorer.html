@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Security Explorer</title>
+    <link rel="stylesheet" href="/static/explorer.css">
+</head>
+<body>
+
+<h2 class="title">🔍 Blockchain & Security Explorer</h2>
+
+<h3>⛓ Blockchain Records</h3>
+
+<div class="block-container">
+    {% for block in chain %}
+        <div class="block"
+             data-index="{{block.index}}"
+             data-time="{{block.timestamp}}"
+             data-action="{{block.data.action}}"
+             data-user="{{block.data.user if block.data.user else 'N/A'}}">
+
+            <p><strong>#{{block.index}}</strong></p>
+            <p>{{block.data.action}}</p>
+            <p class="small">{{block.data.user}}</p>
+            <p class="hash">{{block.hash[:12]}}...</p>
+        </div>
+    {% endfor %}
+</div>
+
+<h3>🔐 Hashed Authentication</h3>
+
+<div class="auth-flow">
+    {% for user in users.keys() %}
+        <div class="auth-box">
+            <p><strong>{{user}}</strong></p>
+            <p>Password → 🔐 Hash</p>
+        </div>
+    {% endfor %}
+</div>
+
+<div class="hash-list">
+    {% for hash in users.values() %}
+        <p class="full-hash">{{hash}}</p>
+    {% endfor %}
+</div>
+
+<!-- MODAL -->
+<div id="blockModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h3>🔐 Authentication Record</h3>
+        <div id="modalData"></div>
+    </div>
+</div>
+
+<!-- SCRIPT -->
+<script>
+
+// WAIT until page loads
+document.addEventListener("DOMContentLoaded", function () {
+
+    const blocks = document.querySelectorAll(".block");
+    const modal = document.getElementById("blockModal");
+    const modalData = document.getElementById("modalData");
+    const closeBtn = document.querySelector(".close");
+
+    blocks.forEach(block => {
+        block.addEventListener("click", function () {
+
+            let index = this.dataset.index;
+            let time = this.dataset.time;
+            let action = this.dataset.action;
+            let user = this.dataset.user;
+
+            modalData.innerHTML = `
+                <div class="record-box">
+                    <p><strong>User:</strong> ${user}</p>
+                    <p><strong>Action:</strong> ${action}</p>
+                    <p><strong>Block ID:</strong> ${index}</p>
+                    <p><strong>Time:</strong> ${time}</p>
+
+                    <hr>
+
+                    <p><strong>Status:</strong> ✅ Verified</p>
+                    <p><strong>Security:</strong> Hashed Authentication</p>
+                </div>
+            `;
+
+            modal.style.display = "block";
+        });
+    });
+
+    closeBtn.onclick = () => modal.style.display = "none";
+
+    window.onclick = (e) => {
+        if (e.target == modal) {
+            modal.style.display = "none";
+        }
+    };
+
+});
+</script>
+
+</body>
+</html>

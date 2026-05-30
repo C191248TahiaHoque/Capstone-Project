@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Identity</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='register.css') }}">
+</head>
+<body>
+
+<div class="terminal">
+
+    <h2>🧬 Create Digital Identity</h2>
+
+    {% if error %}
+        <div class="error-box">⚠️ {{ error }}</div>
+    {% endif %}
+
+    {% if success %}
+        <div class="success-box">✅ Identity Created Successfully</div>
+    {% endif %}
+
+    <form method="POST" id="registerForm">
+
+        <input type="text" name="username" placeholder="> Enter Username" required>
+
+        <input type="password" id="passwordInput" name="password" placeholder="> Create Password" required>
+
+        <input type="password" name="confirm" placeholder="> Confirm Password" required>
+
+        <!-- 🔐 HASH PREVIEW -->
+        <div class="hash-box">
+            🔐 Live Hash:
+            <p id="hashOutput">---</p>
+        </div>
+
+        <button type="submit">INITIATE REGISTRATION</button>
+
+    </form>
+
+    <p class="login-link">
+        Already registered? <a href="/login">Access System</a>
+    </p>
+
+</div>
+
+<!-- 🧬 BLOCK CREATION ANIMATION -->
+<div id="blockAnimation" class="block-animation">
+    ⛓ Creating Block...
+</div>
+
+<script>
+// 🔐 REAL-TIME HASH PREVIEW
+async function sha256(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+document.getElementById("passwordInput").addEventListener("input", async function() {
+    let val = this.value;
+
+    if (val.length > 0) {
+        let hash = await sha256(val);
+        document.getElementById("hashOutput").innerText = hash.substring(0, 40) + "...";
+    } else {
+        document.getElementById("hashOutput").innerText = "---";
+    }
+});
+
+// 🧬 BLOCK CREATION ANIMATION
+document.getElementById("registerForm").addEventListener("submit", function() {
+
+    let block = document.getElementById("blockAnimation");
+
+    block.style.display = "block";
+
+    setTimeout(() => {
+        block.innerText = "✅ Block Added to Blockchain";
+    }, 2000);
+});
+</script>
+
+</body>
+</html>
