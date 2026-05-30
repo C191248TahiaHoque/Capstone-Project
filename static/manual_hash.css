@@ -1,0 +1,107 @@
+/* GLOBAL */
+body {
+    background: radial-gradient(circle at top, #020617, #000000);
+    color: #e2e8f0;
+    font-family: 'Courier New', monospace;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+/* TITLE */
+h2 {
+    margin-top: 30px;
+    color: #38bdf8;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px #38bdf8;
+}
+
+/* CONTAINER */
+form {
+    background: rgba(2, 6, 23, 0.9);
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 30px;
+    width: 400px;
+    margin: 40px auto;
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.2);
+}
+
+/* INPUT FIELD */
+input, textarea {
+    width: 90%;
+    padding: 10px;
+    margin: 10px 0;
+    background: #020617;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    color: #38bdf8;
+    font-size: 14px;
+    outline: none;
+}
+
+/* INPUT FOCUS EFFECT */
+input:focus, textarea:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 10px #38bdf8;
+}
+
+/* BUTTON */
+button {
+    background: linear-gradient(90deg, #38bdf8, #0ea5e9);
+    border: none;
+    padding: 10px 20px;
+    color: black;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* BUTTON HOVER */
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px #38bdf8;
+}
+
+/* RESULT TEXT */
+h3 {
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+/* SUCCESS */
+h3:contains("Verified") {
+    color: #22c55e;
+}
+
+/* ERROR */
+h3:contains("Invalid") {
+    color: #ef4444;
+}
+
+/* TERMINAL STYLE EFFECT */
+textarea {
+    font-family: monospace;
+    letter-spacing: 1px;
+}
+
+/* OPTIONAL GLOW LINE */
+form::before {
+    content: "";
+    display: block;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #38bdf8, transparent);
+    margin-bottom: 15px;
+}
+
+/* SUBTLE ANIMATION */
+@keyframes glow {
+    0% { box-shadow: 0 0 5px #38bdf8; }
+    50% { box-shadow: 0 0 20px #38bdf8; }
+    100% { box-shadow: 0 0 5px #38bdf8; }
+}
+
+form {
+    animation: glow 3s infinite;
+}
