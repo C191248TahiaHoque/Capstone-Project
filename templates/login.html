@@ -13,7 +13,7 @@
     <!-- ERROR -->
     {% if error %}
         <div class="attack-warning" id="attackBox">
-            ⚠️ Unauthorized Access Detected!
+          {{error}}
         </div>
     {% endif %}
 
@@ -94,13 +94,13 @@ function updateAttackMonitor() {
 
 setInterval(updateAttackMonitor, 1000);
 </script>
-<div class="lock-box" id="lockBox">
-    🔒 Account Locked<br>
-    Unlock in <span id="timer">0</span>s
+<div id="lockBox" class="lock-box" style="display:none;">
+    🔒 Account Locked
+    <br>
+    Unlock in <span id="timer">30</span>s
 </div>
-
 <audio id="alarmSound">
-    <source src="https://www.soundjay.com/buttons/beep-07.wav" type="audio/wav">
+    <source src="/static/alarm.mp3" type="audio/wav">
 </audio>
 </body>
 </html>
