@@ -8,11 +8,15 @@ app.secret_key = "secret"
 
 # ================== DATA ==================
 users = {}
+user = {}
 tokens = {}
-user_attacks = {}
+
 
 failed_attempts = {}
+user_attacks = {}
 lock_until = {}
+attack_data = []
+last_attacked_user = None
 
 # store attack attempts globally for graph
 attack_data = []
@@ -74,51 +78,76 @@ def register():
 # ================== LOGIN ==================
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    global attack_data, lock_until, user_attacks, failed_attempts
+    global attack_data, lock_until, user_attacks, failed_attempts, last_attacked_user
 
     if request.method == "POST":
+
         user = request.form["username"]
         pwd = request.form["password"]
 
-        # initialize user counters
+        # Initialize dictionaries
         failed_attempts.setdefault(user, 0)
         user_attacks.setdefault(user, 0)
 
-        # 🔒 LOCK CHECK (per user)
-        if lock_until and user in lock_until and datetime.now() < lock_until[user]:
-            return render_template("login.html",
-                                   error="🚨 Account Locked! Try later")
+        # 🔒 Lock Check
+        if user in lock_until:
 
-        # ✅ SUCCESS LOGIN
+            if datetime.now() < lock_until[user]:
+
+                remaining = int(
+                    (lock_until[user] - datetime.now()).total_seconds()
+                )
+
+                return render_template(
+                    "login.html",
+                    error=f"🚨 Account Locked! Wait {remaining} seconds"
+                )
+
+            else:
+                # Lock expired
+                del lock_until[user]
+                failed_attempts[user] = 0
+
+        # ✅ Successful Login
         if user in users and check_password_hash(users[user], pwd):
 
-            session['user'] = user
+            session["user"] = user
 
-            # reset counters
+            # Reset failed attempts
             failed_attempts[user] = 0
 
-            return redirect('/dashboard')
+            return redirect("/dashboard")
 
-        else:
-            # ❌ FAILED LOGIN
-            failed_attempts[user] += 1
-            user_attacks[user] += 1
-            attack_data.append(user_attacks[user])
+        # ❌ Failed Login
+        last_attacked_user = user
 
-            print(f"❌ Failed login for {user}: {failed_attempts[user]}")
+        failed_attempts[user] += 1
+        user_attacks[user] += 1
 
-            # 🔒 LOCK SYSTEM
-            if failed_attempts[user] >= 5:
-                if not isinstance(lock_until, dict):
-                    lock_until = {}
-                lock_until[user] = datetime.now() + timedelta(seconds=30)
+        attack_data.append(failed_attempts[user])
 
-                return render_template("login.html",
-                    error="🚨 Too many attempts! Account locked for 30s")
+        print("FAILED USER:", user)
+        print("FAILED ATTEMPTS:", failed_attempts[user])
 
-            return render_template("login.html",
-                error=f"❌ Invalid Credentials (Attempts: {failed_attempts[user]})")
+        # 🔒 Lock after 5 attempts
+        if failed_attempts[user] >= 5:
 
+            lock_until[user] = datetime.now() + timedelta(seconds=30)
+
+            print("LOCKED:", user)
+
+            return render_template(
+                "login.html",
+                error="🚨 Account Locked for 30 seconds"
+            )
+
+        # Normal failed login
+        return render_template(
+            "login.html",
+            error=f"❌ Unauthorize Access Identified " #(Attempts:  {failed_attempts[user]})"
+        )
+
+    # First page load
     return render_template("login.html")
 
 # ================== DASHBOARD ==================
@@ -128,6 +157,8 @@ def dashboard():
         return redirect("/login")
 
     user = session["user"]
+    
+    total_attacks = user_attacks.get(user, 0)
 
     history = [tokens[user]-10, tokens[user]-5, tokens[user]]
 
@@ -141,31 +172,54 @@ def dashboard():
         chain=blockchain.chain,
         history=history,
         attacks=attack_data,      # for graph
-        total_attacks=attacks     # for counter
+        total_attacks=total_attacks     # for counter
     )
-
+   
 # ================== ATTACK STATUS ==================
+
 @app.route("/attack_status")
 def attack_status():
+
+    global last_attacked_user
+
     user = session.get("user")
 
-    user_attack_count = user_attacks.get(user, 0)
+    # If not logged in, show attacks for the username currently being attacked
+    if not user:
+        user = last_attacked_user
 
-    threat_score = user_attack_count * 3
+    #attempts = user_attacks.get(user, 0)
+    attempts = failed_attempts.get(user, 0) 
+    
+    threat_score = attempts * 3
 
-    if threat_score < 5:
+    if threat_score < 2:
         status = "Low Risk ✅"
-    elif threat_score < 10:
+    elif threat_score < 5:
         status = "Medium Risk ⚠️"
     else:
         status = "High Risk 🚨"
 
-    return jsonify({
-        "attempts": user_attack_count,
-        "status": status,
-        "score": threat_score
-    })
+    locked = False
+    remaining = 0
 
+    if user in lock_until:
+
+        if datetime.now() < lock_until[user]:
+
+            locked = True
+
+            remaining = int(
+                (lock_until[user] - datetime.now()).total_seconds()
+            )
+
+    return jsonify({
+        "attempts": attempts,
+        "status": status,
+        "score": threat_score,
+        "locked": locked,
+        "remaining": remaining
+    })
 # ================== ATTACK GRAPH DATA ==================
 @app.route("/attack_data")
 def attack_data_api():
