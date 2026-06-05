@@ -6,56 +6,159 @@
 </head>
 <body>
 
-<h2 class="title">🔍 Blockchain & Security Explorer</h2>
+<h2 class="title">🔍 Security & Threat Monitoring System</h2>
 
-<h3>⛓ Blockchain Records</h3>
 
+<h3>⛓ Blockchain Secured Identity Records🔐</h3>
+<!-- BLOCK SECTION -->
 <div class="block-container">
-    {% for block in chain %}
-        <div class="block"
-             data-index="{{block.index}}"
-             data-time="{{block.timestamp}}"
-             data-action="{{block.data.action}}"
-             data-user="{{block.data.user if block.data.user else 'N/A'}}">
 
-            <p><strong>#{{block.index}}</strong></p>
-            <p>{{block.data.action}}</p>
-            <p class="small">{{block.data.user}}</p>
-            <p class="hash">{{block.hash[:12]}}...</p>
+{% for block in chain %}
+
+<div class="block {% if block.valid %}valid{% else %}invalid{% endif %}"
+     data-index="{{ block.index }}"
+     data-time="{{ block.timestamp }}"
+     data-owner="{{ block.data.user }}"
+     data-action="{{ block.data.action }}"
+     data-hash="{{ block.hash }}"
+     data-current="{{ current_user }}">
+
+      <p><strong>Block #{{ block.index }}</strong></p>
+
+    {% if block.index == 0 %}
+        <span class="genesis-tag">🌐 Genesis Block</span>
+
+    {% elif block.data.user == current_user %}
+        <span class="owner-tag">🔓 Your Block</span>
+
+    {% else %}
+        <span class="protected-tag">🔒 Protected</span>
+    {% endif %}
+
+    <p>{{ block.data.action }}</p>
+    <p class="small">{{ block.data.user }}</p>
+
+    <p class="hash">
+        {{ block.hash[:12] }}...
+    </p>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+
+<div class="security-guarantee">
+
+    <h2>🛡 Blockchain Security Guarantee</h2>
+
+    <div class="guarantee-grid">
+
+        <div class="guarantee-box">
+            <h3>🔐 Identity Protection</h3>
+            <p>
+                Each user identity is stored inside a cryptographically linked block.
+                Only the owner can access their own data.
+            </p>
         </div>
-    {% endfor %}
-</div>
 
-<h3>🔐 Hashed Authentication</h3>
-
-<div class="auth-flow">
-    {% for user in users.keys() %}
-        <div class="auth-box">
-            <p><strong>{{user}}</strong></p>
-            <p>Password → 🔐 Hash</p>
+        <div class="guarantee-box">
+            <h3>⛓ Immutability</h3>
+            <p>
+                Once a block is created, it cannot be modified without breaking the entire chain hash structure.
+            </p>
         </div>
-    {% endfor %}
-</div>
 
-<div class="hash-list">
-    {% for hash in users.values() %}
-        <p class="full-hash">{{hash}}</p>
-    {% endfor %}
-</div>
+        <div class="guarantee-box">
+            <h3>🚫 Unauthorized Access Prevention</h3>
+            <p>
+                Even if someone tries to access another user's block,
+                system-level validation blocks the request.
+            </p>
+        </div>
 
-<!-- MODAL -->
-<div id="blockModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h3>🔐 Authentication Record</h3>
-        <div id="modalData"></div>
+        <div class="guarantee-box">
+            <h3>✔ Cryptographic Verification</h3>
+            <p>
+                Every block is validated using SHA-256 hash comparison with previous block linkage.
+            </p>
+        </div>
+
     </div>
+
 </div>
 
-<!-- SCRIPT -->
-<script>
 
-// WAIT until page loads
+<div class="block-section">
+
+
+<!-- AUTH SECTION (FORCED BELOW) -->
+<div class="auth-section">
+<h3>🔐 Hashed Authentication Records (Linked Chain)</h3>
+
+<div class="hash-chain">
+
+{% for i in range(chain|length) %}
+    {% set block = chain[i] %}
+
+    <div class="hash-node">
+
+        <div class="hash-header">
+            <strong>{{ block.data.user }}</strong>
+        </div>
+
+        <div class="hash-box">
+            <p><b>Hash:</b></p>
+            <span>{{ block.hash[:18] }}...</span>
+        </div>
+
+        {% if i > 0 %}
+        <div class="hash-link">
+            ⬅ linked to previous hash
+        </div>
+
+        <div class="prev-hash">
+            {{ chain[i-1].hash[:18] }}...
+        </div>
+        {% else %}
+        <div class="genesis-tag">
+            🌐 Genesis Block (Root Hash)
+        </div>
+        {% endif %}
+
+    </div>
+
+    {% if not loop.last %}
+        <div class="chain-arrow">⛓ ➝</div>
+    {% endif %}
+
+{% endfor %}
+
+</div>
+
+</div>
+
+
+<div id="tamperResult"></div>
+
+<!-- BLOCK DETAILS MODAL -->
+
+<div id="blockModal" class="modal">
+
+    <div class="modal-content">
+
+        <span class="close">&times;</span>
+
+        <h3>⛓ Block Details</h3>
+
+        <div id="modalData"></div>
+
+    </div>
+
+</div>
+
+<script>
 document.addEventListener("DOMContentLoaded", function () {
 
     const blocks = document.querySelectorAll(".block");
@@ -63,42 +166,121 @@ document.addEventListener("DOMContentLoaded", function () {
     const modalData = document.getElementById("modalData");
     const closeBtn = document.querySelector(".close");
 
-    blocks.forEach(block => {
-        block.addEventListener("click", function () {
+    blocks.forEach(function(block){
 
-            let index = this.dataset.index;
-            let time = this.dataset.time;
-            let action = this.dataset.action;
-            let user = this.dataset.user;
+        block.addEventListener("click", function(){
 
+            let index = this.dataset.index || "";
+            let owner = this.dataset.owner || "";
+            let current = this.dataset.current || "";
+            let action = this.dataset.action || "";
+            let hash = this.dataset.hash || "";
+
+            // =========================
+            // 1. GENESIS BLOCK (HIGHEST PRIORITY)
+            // =========================
+            if(index === "0"){
+
+                modalData.innerHTML = `
+                    <div class="record-box">
+                        <h3>🌐 Genesis Block</h3>
+
+                        <p><strong>Block:</strong> #0</p>
+                        <p><strong>Purpose:</strong> Blockchain Initialization</p>
+                        <p><strong>Status:</strong> Publicly Verifiable</p>
+
+                        <p>✅ Accessible To All Users</p>
+                    </div>
+                `;
+
+                modal.style.display = "block";
+                return;
+            }
+
+            // =========================
+            // 2. OTHER USERS BLOCK (DENY)
+            // =========================
+            if(owner !== current){
+
+                modalData.innerHTML = `
+                    <div class="denied-box">
+                        <h3>🚫 ACCESS DENIED</h3>
+
+                        <p>This block belongs to another user.</p>
+                        <p>Privacy Protection Active</p>
+                        <p>Blockchain Access Control Verified</p>
+                    </div>
+                `;
+
+                modal.style.display = "block";
+                return;
+            }
+
+            // =========================
+            // 3. OWNER BLOCK (ALLOW)
+            // =========================
             modalData.innerHTML = `
                 <div class="record-box">
-                    <p><strong>User:</strong> ${user}</p>
+
+                    <h3>🔓 Access Granted</h3>
+
+                    <p><strong>User:</strong> ${owner}</p>
                     <p><strong>Action:</strong> ${action}</p>
-                    <p><strong>Block ID:</strong> ${index}</p>
-                    <p><strong>Time:</strong> ${time}</p>
+                    <p><strong>Hash:</strong> ${hash}</p>
 
-                    <hr>
+                    <p>✅ Identity Verified</p>
 
-                    <p><strong>Status:</strong> ✅ Verified</p>
-                    <p><strong>Security:</strong> Hashed Authentication</p>
                 </div>
             `;
 
             modal.style.display = "block";
+
         });
+
     });
 
-    closeBtn.onclick = () => modal.style.display = "none";
+    closeBtn.onclick = function () {
+        modal.style.display = "none";
+    };
 
-    window.onclick = (e) => {
-        if (e.target == modal) {
+    window.onclick = function(event) {
+        if(event.target === modal){
             modal.style.display = "none";
         }
     };
 
 });
+
 </script>
 
+<script>
+document.getElementById("attackBtn").addEventListener("click", function(){
+
+    const blocks = document.querySelectorAll(".block");
+
+    let attackIndex = Math.floor(blocks.length / 2); 
+    // attack middle block (demo purpose)
+
+    for(let i = attackIndex; i < blocks.length; i++){
+
+        let block = blocks[i];
+
+        block.classList.add("corrupt");
+
+        setTimeout(() => {
+            block.classList.add("invalid");
+        }, 800);
+
+        // break chain link visually
+        let nextLink = block.nextElementSibling;
+        if(nextLink && nextLink.classList.contains("chain-link")){
+            nextLink.classList.add("break");
+        }
+    }
+
+    alert("🚨 Blockchain Integrity Compromised!");
+});
+</script>
 </body>
+
 </html>
