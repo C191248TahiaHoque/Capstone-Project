@@ -51,14 +51,20 @@ html, body {
     justify-content: center;
 }
 
-.auth-box {
-    background: #020617;
-    padding: 15px;
-    margin: 10px;
-    border-radius: 10px;
-    width: 220px;
-}
+.auth-box{
 
+    width:300px;
+
+    min-height:150px;
+
+    padding:20px;
+
+    border-radius:15px;
+
+    background:#030b2d;
+
+    overflow:hidden;
+}
 /* HASH LIST */
 .hash-list {
     width: 80%;
@@ -152,4 +158,420 @@ html, body {
     float: right;
     cursor: pointer;
     font-size: 22px;
+}
+
+.hash-preview,
+.hash-box,
+.full-hash {
+
+    word-break: break-all;
+    overflow-wrap: break-word;
+
+    white-space: normal;
+
+    width: 100%;
+
+    font-size: 12px;
+
+    color: #00c8ff;
+
+    margin-top: 10px;
+}
+
+.privacy-shield{
+    margin-top:10px;
+    padding:10px;
+
+    background:rgba(0,255,204,0.1);
+
+    border:1px solid #00ffcc;
+
+    border-radius:10px;
+
+    color:#00ffcc;
+
+    font-size:12px;
+
+    text-align:center;
+}
+
+.attack-simulator{
+    margin-top:30px;
+    text-align:center;
+}
+
+#hackBtn{
+
+    padding:12px 25px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#ff3b3b;
+
+    color:white;
+
+    font-weight:bold;
+
+    cursor:pointer;
+}
+
+.attack-result{
+
+    margin-top:20px;
+
+    padding:20px;
+
+    border-radius:12px;
+
+    background:rgba(255,0,0,0.1);
+
+    border:1px solid red;
+
+    color:#ff6b6b;
+
+    font-size:18px;
+
+    animation: glow 1s infinite alternate;
+}
+
+@keyframes glow{
+    from{
+        box-shadow:0 0 10px red;
+    }
+    to{
+        box-shadow:0 0 25px red;
+    }
+}.attack-simulator{
+    margin-top:30px;
+    text-align:center;
+}
+
+#hackBtn{
+
+    padding:12px 25px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#ff3b3b;
+
+    color:white;
+
+    font-weight:bold;
+
+    cursor:pointer;
+}
+
+.attack-result{
+
+    margin-top:20px;
+
+    padding:20px;
+
+    border-radius:12px;
+
+    background:rgba(255,0,0,0.1);
+
+    border:1px solid red;
+
+    color:#ff6b6b;
+
+    font-size:18px;
+
+    animation: glow 1s infinite alternate;
+}
+
+@keyframes glow{
+    from{
+        box-shadow:0 0 10px red;
+    }
+    to{
+        box-shadow:0 0 25px red;
+    }
+}
+.security-demo{
+
+    margin:30px auto;
+
+    padding:20px;
+
+    width:80%;
+
+    text-align:center;
+
+    border-radius:15px;
+
+    border:1px solid #00ffcc;
+
+    background:#08152d;
+}
+
+.security-demo button{
+
+    margin:10px;
+
+    padding:12px 20px;
+
+    border:none;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-weight:bold;
+}
+
+#attackResult{
+
+    margin-top:20px;
+
+    padding:15px;
+
+    min-height:80px;
+
+    border-radius:10px;
+}
+
+.my-block{
+    border:2px solid #00ff88;
+}
+
+.protected-block{
+    border:2px solid orange;
+}
+.owner-tag{
+    display:inline-block;
+    background:#00cc66;
+    color:white;
+    padding:5px 10px;
+    border-radius:6px;
+    margin:8px 0;
+    font-size:12px;
+}
+
+.protected-tag{
+    display:inline-block;
+    background:#ff9800;
+    color:white;
+    padding:5px 10px;
+    border-radius:6px;
+    margin:8px 0;
+    font-size:12px;
+}
+
+.block:hover{
+    transform:scale(1.05);
+    box-shadow:0 0 15px #00ffcc;
+}
+.block{
+    cursor:pointer;
+    pointer-events:auto;
+}
+.block-container{
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+    justify-content:center;
+}
+
+.block{
+    width:220px;
+    padding:15px;
+    border-radius:12px;
+    background:#0f172a;
+    color:white;
+    cursor:pointer;
+    transition:0.3s;
+    position:relative;
+    border:2px solid transparent;
+}
+
+.block:hover{
+    transform:scale(1.05);
+}
+
+/* VALID BLOCK */
+.valid{
+    border:2px solid #00ff88;
+    box-shadow:0 0 15px #00ff8855;
+}
+
+/* TAMPERED BLOCK */
+.invalid{
+    border:2px solid #ff3b3b;
+    box-shadow:0 0 15px #ff3b3b55;
+    animation: shake 0.3s infinite alternate;
+}
+
+@keyframes shake{
+    from { transform: translateX(-2px); }
+    to { transform: translateX(2px); }
+}
+
+.valid-badge{
+    color:#00ff88;
+    font-weight:bold;
+}
+
+.invalid-badge{
+    color:#ff3b3b;
+    font-weight:bold;
+}
+
+.hash{
+    font-size:12px;
+    word-break:break-all;
+    color:#aaa;
+}
+
+.block-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.block:hover{
+    transform: translateY(-5px);
+    box-shadow: 0 0 15px #00ffcc;
+}
+
+.hash{
+    word-break:break-all;
+    font-size:12px;
+}
+
+.owner-tag{
+    color:#042d1d;
+    font-weight:bold;
+}
+
+.protected-tag{
+    color:#320a0a;
+    font-weight:bold;
+}
+
+.genesis-tag {
+    color: #00d4ff;
+    font-weight: bold;
+    text-shadow: 0 0 10px #00d4ff;
+}
+.security-proof{
+    margin-top: 30px;
+    padding: 20px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 15px;
+    color: white;
+}
+
+.proof-grid{
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.proof-box{
+    width: 300px;
+    padding: 20px;
+    border-radius: 12px;
+    background: #0f172a;
+    border: 1px solid #334155;
+}
+
+.proof-box h4{
+    margin-bottom: 10px;
+}
+
+.traditional{
+    border-left: 4px solid #ff4d4d;
+}
+
+.blockchain{
+    border-left: 4px solid #00ffcc;
+}
+
+.proof-box ul{
+    padding-left: 20px;
+}
+
+.proof-box li{
+    margin-bottom: 8px;
+}
+.security-guarantee{
+    margin-top: 40px;
+    padding: 25px;
+    background: #0b1220;
+    border-radius: 15px;
+    color: white;
+}
+
+.guarantee-grid{
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.guarantee-box{
+    flex: 1;
+    min-width: 250px;
+    padding: 20px;
+    border-radius: 12px;
+    background: #111a2e;
+    border-left: 4px solid #00e5ff;
+}
+
+.guarantee-box h3{
+    color: #00e5ff;
+}
+.hash-chain{
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    overflow-x: auto;
+    padding: 20px;
+}
+
+.hash-node{
+    min-width: 260px;
+    background: #111a2e;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid #00e5ff;
+    position: relative;
+}
+
+.hash-box{
+    background: #0b1220;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    color: #00e5ff;
+}
+
+.prev-hash{
+    margin-top: 8px;
+    font-size: 12px;
+    color: #ffcc00;
+}
+
+.chain-arrow{
+    font-size: 22px;
+    color: #00e5ff;
+}
+
+.hash-link{
+    margin-top: 10px;
+    font-size: 12px;
+    color: #aaa;
+}
+
+.genesis-tag{
+    margin-top: 10px;
+    color: #00ff88;
+    font-weight: bold;
 }
