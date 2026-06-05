@@ -3,6 +3,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import hashlib
 from blockchain import Blockchain
+import json
+import time
+
 
 print("Blockchain loaded from:")
 import blockchain
@@ -284,22 +287,81 @@ def attack_data_api():
 # ================== MANUAL HASH ==================
 @app.route("/manual_hash", methods=["GET", "POST"])
 def manual_hash():
+    result = None
+    block_info = None
+
     if request.method == "POST":
-        user = request.form["username"]
         input_hash = request.form["hash"]
 
-        if user in users and users[user] == input_hash:
-            result = "✅ Hash Verified"
-            blockchain.add_block({
-                "user": user,
-                "action": "manual_hash"
-            })
-        else:
+        for block in blockchain.chain:
+            if block.hash == input_hash:
+                block_info = block
+                result = "✅ Valid Block Found"
+                break
+
+        if not block_info:
             result = "❌ Invalid Hash"
 
-        return render_template("manual_hash.html", result=result)
+        return render_template(
+            "manual_hash.html",
+            result=result,
+            block=block_info
+        )
 
     return render_template("manual_hash.html")
+
+def generate_hash(block):
+    block_data = {
+        "index": block["index"],
+        "timestamp": block["timestamp"],
+        "data": block["data"],
+        "previous_hash": block["previous_hash"]
+    }
+
+    block_string = json.dumps(block_data, sort_keys=True)
+    return hashlib.sha256(block_string.encode()).hexdigest()
+
+def calculate_hash_from_block(block):
+    block_data = {
+        "index": block.index,
+        "timestamp": block.timestamp,
+        "data": block.data,
+        "previous_hash": block.previous_hash
+    }
+
+    block_string = json.dumps(block_data, sort_keys=True)
+    return hashlib.sha256(block_string.encode()).hexdigest()
+
+@app.route("/verify_hash", methods=["POST"])
+def verify_hash():
+    user_hash = request.form["hash"]
+
+    for block in blockchain.chain:
+        if block.hash == user_hash:
+            return {"status": "VALID"}
+
+    return {"status": "INVALID"}
+
+@app.route("/verify_block/<int:index>")
+def verify_block(index):
+    block = blockchain.chain[index]
+
+    temp_data = {
+        "index": block.index,
+        "timestamp": block.timestamp,
+        "data": block.data,
+        "previous_hash": block.previous_hash
+    }
+
+    recomputed = hashlib.sha256(
+        json.dumps(temp_data, sort_keys=True).encode()
+    ).hexdigest()
+
+    return {
+        "stored_hash": block.hash,
+        "recomputed_hash": recomputed,
+        "valid": block.hash == recomputed
+    }
 
 # ================== DOWNLOAD LOG ==================
 @app.route("/download_logs")
