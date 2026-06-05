@@ -2,6 +2,14 @@ from flask import Flask, render_template, request, redirect, session, jsonify, s
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import hashlib
+from blockchain import Blockchain
+
+print("Blockchain loaded from:")
+import blockchain
+print(blockchain.__file__)
+blockchain = Blockchain()
+#print(Blockchain)
+#print(Blockchain.__module__)
 
 app = Flask(__name__)
 app.secret_key = "secret"
@@ -23,16 +31,34 @@ attack_data = []
 
 # ================== BLOCKCHAIN ==================
 class Block:
-    def __init__(self, index, data, prev_hash):
+    def __init__(self, index, data, previous_hash):
+
         self.index = index
         self.timestamp = str(datetime.now())
         self.data = data
-        self.prev_hash = prev_hash
-        self.hash = self.generate_hash()
+        self.previous_hash = previous_hash
 
+        self.hash = self.generate_hash()
+        
+    def calculate_hash(self):
+        block_data = {
+            "index": self.index,
+            "timestamp": self.timestamp,
+            "data": self.data,
+            "previous_hash": self.previous_hash
+        }
+        
     def generate_hash(self):
+
+        block_string = (
+            str(self.index)
+            + self.timestamp
+            + str(self.data)
+            + self.previous_hash
+        )
+
         return hashlib.sha256(
-            f"{self.index}{self.timestamp}{self.data}{self.prev_hash}".encode()
+            block_string.encode()
         ).hexdigest()
 
 class Blockchain:
@@ -40,9 +66,32 @@ class Blockchain:
         self.chain = [Block(0, {"action": "genesis"}, "0")]
 
     def add_block(self, data):
-        prev = self.chain[-1]
-        block = Block(len(self.chain), data, prev.hash)
+        previous = self.chain[-1]
+
+        block = Block(
+            len(self.chain),
+            data,
+            previous.hash
+        )
+
         self.chain.append(block)
+
+    def is_valid(self):
+
+        for i in range(1, len(self.chain)):
+
+            current = self.chain[i]
+            previous = self.chain[i - 1]
+
+            # Verify link
+            if current.previous_hash != previous.hash:
+                return False
+
+            # Verify hash
+            if current.calculate_hash() != current.hash:
+                return False
+
+        return True
 
 blockchain = Blockchain()
 
@@ -57,7 +106,13 @@ def index():
 def register():
     if request.method == "POST":
         user = request.form["username"]
+
+        user_id = hashlib.sha256(
+        user.encode()
+        ).hexdigest()[:12]
+        #user = request.form["username"]
         pwd = request.form["password"]
+        #user_id = hashlib.sha256(user.encode()).hexdigest()[:12]
         confirm = request.form["confirm"]
 
         if pwd != confirm:
@@ -68,9 +123,10 @@ def register():
 
         blockchain.add_block({
             "user": user,
-            "action": "register"
-        })
-
+            "user_id": hashlib.sha256(user.encode()).hexdigest()[:12],
+            "action": "Identity Created",
+            "password_hash": users[user]
+        })    
         return render_template("register.html", success=True)
 
     return render_template("register.html")
@@ -272,14 +328,48 @@ def comparison():
     )
 
 # ================== EXPLORER ==================
+def validate_chain():
+    
+    for i in range(1, len(blockchain.chain)):
+
+        current = blockchain.chain[i]
+        previous = blockchain.chain[i - 1]
+
+        if current.previous_hash != previous.hash:
+            return False
+
+        if current.hash != current.generate_hash():
+            return False
+
+    return True
+
 @app.route("/explorer")
 def explorer():
+
+    current_user = session.get("user")
+
+    validated_chain = []
+
+    for block in blockchain.chain:
+
+        validated_chain.append({
+            "index": block.index,
+            "timestamp": block.timestamp,
+            "data": block.data,
+            "hash": block.hash,
+            "previous_hash": block.previous_hash,
+            "valid": True  # assume valid, blockchain.is_valid() handles full check
+        })
+
+    chain_valid = blockchain.is_valid()
+
     return render_template(
         "explorer.html",
-        chain=blockchain.chain,
+        chain=validated_chain,
+        valid=chain_valid,
+        current_user=current_user,
         users=users
     )
-
 # ================== LOGOUT ==================
 @app.route("/logout")
 def logout():
